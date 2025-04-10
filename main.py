@@ -1,4 +1,3 @@
-
 import sys
 import os
 import json
@@ -133,7 +132,6 @@ class SheetSmartApp(QWidget):
         self.prompt_input = QTextEdit()
         self.prompt_input.setPlaceholderText("Enter your AI prompt")
 
-        # Add a dropdown for "Read" or "Add" selection
         self.action_select = QComboBox()
         self.action_select.addItem("Read Data (Only AI Process)")
         self.action_select.addItem("Add Data to Sheet (AI Process & Add)")
@@ -193,12 +191,10 @@ class SheetSmartApp(QWidget):
             return
 
         try:
-            # Load credentials and build Sheets service
             credentials = service_account.Credentials.from_service_account_file(self.credentials_path)
             service = build('sheets', 'v4', credentials=credentials)
             sheet = service.spreadsheets()
 
-            # Read the current values from the specified range
             result = sheet.values().get(spreadsheetId=sheet_id, range=cell_range).execute()
             values = result.get('values', [])
 
@@ -206,10 +202,8 @@ class SheetSmartApp(QWidget):
                 self.result_box.setPlainText("No data found in the specified range.")
                 return
 
-            # Prepare the prompt based on dropdown selection
             action = self.action_select.currentText()
 
-            # Add instruction if user selects 'Add Data' option
             instruction_line = "Please provide your response in a clean and structured manner, with only relevant data included. If asked to add data to the sheet, make sure to format it as a row with comma-separated values."
             data_str = "\n".join([", ".join(row) for row in values])
 
@@ -218,7 +212,6 @@ class SheetSmartApp(QWidget):
             else:
                 full_prompt = f"{prompt}\n\nData:\n{data_str}"
 
-            # Call OpenAI
             client = openai.OpenAI(api_key=self.api_key)
             completion = client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -226,14 +219,11 @@ class SheetSmartApp(QWidget):
             )
             ai_reply = completion.choices[0].message.content.strip()
 
-            # Split the response into two parts
-            structured_response = ai_reply.split("\n")[0]  # Assuming the first line is the structured response
+            structured_response = ai_reply.split("\n")[0] 
             normal_response = ai_reply[len(structured_response):].strip()
 
-            # Show the normal response to the user
             self.result_box.setPlainText(normal_response)
 
-            # Clean the AI response to extract only valid data rows
             lines = normal_response.split("\n")
             valid_data = [line.split(",") for line in lines if "," in line]
 
@@ -242,13 +232,11 @@ class SheetSmartApp(QWidget):
                 return
 
             if action == "Add Data to Sheet (AI Process & Add)":
-                # Add data to the sheet if the action is "Add"
                 new_row = valid_data[0]
                 current_row_count = len(values)
                 start_col_letter = cell_range.split(":")[0][0]
                 insert_range = f"{start_col_letter}{current_row_count + 1}"
 
-                # Append the new row to the sheet
                 sheet.values().update(
                     spreadsheetId=sheet_id,
                     range=insert_range,
@@ -259,7 +247,6 @@ class SheetSmartApp(QWidget):
                 metadata = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
                 sheet_id_number = metadata['sheets'][0]['properties']['sheetId']
 
-                # Highlight the row with light green
                 highlight_request = {
                     "repeatCell": {
                         "range": {
@@ -288,7 +275,6 @@ class SheetSmartApp(QWidget):
                 QMessageBox.information(self, "Success", "✅ AI-generated data was added and highlighted!")
 
             else:
-                # In "Read" mode, no data will be added to the sheet
                 QMessageBox.information(self, "Read Complete", "✅ AI has processed the data.")
 
         except Exception as e:
