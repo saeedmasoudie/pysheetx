@@ -13,6 +13,10 @@ PySheetX is a Python-based application that integrates with Google Sheets and Op
 - **Prompt Customization**: Set custom prompts to control how the AI processes the spreadsheet data (e.g., read, add new rows, etc.).
 - **Validation and Authentication**: Securely authenticate Google Sheets API using `credentials.json` and OpenAI API key.
 
+## **Screenshots**
+![Screen 1](screenshots/Screenshot%202025-04-10%20171815.jpg)
+![Screen 2](screenshots/Screenshot%202025-04-10%20171911.jpg)
+
 ## Installation
 
 ### Prerequisites
